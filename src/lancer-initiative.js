@@ -5,9 +5,6 @@ import { LancerInitiativeConfigForm } from "./li-form";
 const module = "lancer-initiative";
 const templatePath = "modules/lancer-initiative/templates/lancer-combat-tracker.hbs";
 
-/**
- * @param val {Partial<LancerInitiativeConfig["def_appearance"]>}
- */
 export function setAppearance(val) {
   const defaults = CONFIG.LancerInitiative.def_appearance;
   document.documentElement.style.setProperty(
@@ -32,7 +29,6 @@ export function setAppearance(val) {
   );
   document.documentElement.style.setProperty(
     "--lancer-initiative-secret-color",
-    // @ts-ignore
     val?.secret_color ?? defaults.secret_color
   );
   document.documentElement.style.setProperty(
@@ -65,7 +61,6 @@ function registerSettings() {
       friendly_color: "#44abe0",
       neutral_color: "#146464",
       enemy_color: "#d98f30",
-      // @ts-ignore
       secret_color: "#552f8c",
       done_color: "#444444",
     },

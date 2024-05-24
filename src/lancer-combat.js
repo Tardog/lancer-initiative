@@ -46,7 +46,6 @@ export class LancerCombat extends Combat {
     await this.resetActivations();
     let advanceTime = Math.max(this.turns.length - (this.turn || 0), 0) * CONFIG.time.turnTime;
     advanceTime += CONFIG.time.roundTime;
-    // @ts-ignore jtfc advanceTime is fucking used in foundry.js
     return this.update({ round: this.round + 1, turn: null }, { advanceTime });
   }
 
@@ -62,13 +61,11 @@ export class LancerCombat extends Combat {
     const round = Math.max(this.round - 1, 0);
     let advanceTime = 0;
     if (round > 0) advanceTime -= CONFIG.time.roundTime;
-    // @ts-ignore jtfc advanceTime is fucking used in foundry.js
     return this.update({ round, turn: null }, { advanceTime });
   }
 
   async resetAll() {
     await this.resetActivations();
-    // @ts-expect-error v10
     this.combatants.forEach(c => c.updateSource({ initiative: null }));
     return this.update({ turn: null, combatants: this.combatants.toObject() }, { diff: false });
   }
@@ -124,11 +121,7 @@ export class LancerCombatant extends Combatant {
   prepareBaseData() {
     super.prepareBaseData();
     const module = CONFIG.LancerInitiative.module;
-    if (
-      // @ts-expect-error
-      this.flags?.[module]?.activations?.max === undefined &&
-      canvas?.ready
-    ) {
+    if (this.flags?.[module]?.activations?.max === undefined && canvas?.ready) {
       /** @type {number} */
       let activations;
       switch (typeof CONFIG.LancerInitiative.activations) {
@@ -146,7 +139,6 @@ export class LancerCombatant extends Combatant {
           activations = 1;
           break;
       }
-      // @ts-expect-error v10
       this.updateSource({
         [`flags.${module}.activations`]: {
           max: activations,
@@ -176,11 +168,7 @@ export class LancerCombatant extends Combatant {
       this.getFlag(module, "disposition") ??
       (this.actor?.hasPlayerOwner ?? false
         ? 2
-        : // @ts-expect-error v10
-          this.token?.disposition ??
-          // @ts-expect-error v10
-          this.actor?.prototypeToken.disposition ??
-          -2)
+        : this.token?.disposition ?? this.actor?.prototypeToken.disposition ?? -2)
     );
   }
 
