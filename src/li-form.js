@@ -1,16 +1,12 @@
 import { getTrackerAppearance } from "./lancer-combat-tracker";
-type Appearance = NonNullable<typeof CONFIG.LancerInitiative.def_appearance>;
+// type Appearance = NonNullable<typeof CONFIG.LancerInitiative.def_appearance>;
 
 /**
  * Settings form for customizing the icon appearance of the icon used in the
  * tracker
  */
-export class LancerInitiativeConfigForm extends FormApplication<
-  FormApplicationOptions,
-  Appearance,
-  undefined
-> {
-  static override get defaultOptions(): FormApplicationOptions {
+export class LancerInitiativeConfigForm extends FormApplication {
+  static get defaultOptions() {
     return {
       ...super.defaultOptions,
       title: "Lancer Intiative",
@@ -20,11 +16,14 @@ export class LancerInitiativeConfigForm extends FormApplication<
     };
   }
 
-  override getData(): Appearance {
+  getData() {
     return getTrackerAppearance();
   }
 
-  override activateListeners(html: JQuery<HTMLElement>): void {
+  /**
+   * @param html {JQuery<HTMLElement>}
+   */
+  activateListeners(html) {
     super.activateListeners(html);
 
     //update the preview icon
@@ -42,20 +41,24 @@ export class LancerInitiativeConfigForm extends FormApplication<
 
     // Set the preview icon color to the last hovered color picker
     html.find('input[type="color"]').on("mouseenter mouseleave", e => {
-      html.find("a.preview").css("color", $(e.target).val() as string);
+      html.find("a.preview").css("color", $(e.target).val());
       if ($(e.target).attr("name") === "done_selector") return;
-      html.find("div.fake-combatant").css("border-color", $(e.target).val() as string);
+      html.find("div.fake-combatant").css("border-color", $(e.target).val());
     });
 
     html.find('button[name="reset"]').on("click", this.resetSettings.bind(this));
   }
 
-  override async _updateObject(_: Event, data: Record<string, unknown>): Promise<void> {
+  /**
+   * @param _ev {Event}
+   * @param data {Record<string, unknown>}
+   */
+  async _updateObject(_ev, data) {
     const config = CONFIG.LancerInitiative;
     game.settings.set(
       config.module,
       "combat-tracker-appearance",
-      foundry.utils.diffObject(config.def_appearance!, data, { inner: true })
+      foundry.utils.diffObject(config.def_appearance, data, { inner: true })
     );
   }
 
@@ -63,7 +66,7 @@ export class LancerInitiativeConfigForm extends FormApplication<
    * Sets all settings handled by the form to undefined in order to revert to
    * their default values.
    */
-  async resetSettings(): Promise<unknown> {
+  async resetSettings() {
     const config = CONFIG.LancerInitiative;
     await game.settings.set(config.module, "combat-tracker-appearance", {});
     return this.render();

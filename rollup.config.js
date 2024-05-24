@@ -1,11 +1,10 @@
 import { terser } from "rollup-plugin-terser";
 import copy from "rollup-plugin-copy";
 import { nodeResolve } from "@rollup/plugin-node-resolve";
-import typescript from "@rollup/plugin-typescript";
 
 /** @type {import('rollup').RollupOptions} */
 const config = {
-  input: "src/lancer-initiative.ts",
+  input: "src/lancer-initiative.js",
   output: {
     dir: "dist",
     format: "es",
@@ -25,7 +24,6 @@ const config = {
   plugins: [
     copy({ targets: [{ src: "public/*", dest: "dist" }] }),
     nodeResolve(),
-    typescript(),
   ],
 };
 export default config;

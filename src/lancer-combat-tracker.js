@@ -1,18 +1,16 @@
-import type { LancerCombat, LancerCombatant } from "./lancer-combat";
-
 /**
  * Overrides the display of the combat and turn order tab to add activation
  * buttons and either move or remove the initiative button
  */
 export class LancerCombatTracker extends CombatTracker {
-  static override get defaultOptions(): ApplicationOptions {
+  static get defaultOptions() {
     return {
       ...super.defaultOptions,
-      template: CONFIG.LancerInitiative.templatePath!,
+      template: CONFIG.LancerInitiative.templatePath,
     };
   }
 
-  override scrollToTurn(): void {
+  scrollToTurn() {
     if (this.viewed?.turn == null || !(CONFIG.LancerInitiative?.sort ?? true))
       return super.scrollToTurn();
     this.element.find("ol#combat-tracker")[0].scrollTop = 0;
@@ -24,22 +22,13 @@ export class LancerCombatTracker extends CombatTracker {
    * units that have already gone to be moved to the bottom without the risk of
    * updateCombat events being eaten.
    */
-  override async getData(
-    options?: Partial<ApplicationOptions>
-  ): Promise<CombatTracker.Data> {
+  async getData(options = {}) {
     const config = CONFIG.LancerInitiative;
     const appearance = getTrackerAppearance();
-    const data = (await super.getData(options)) as {
-      turns: {
-        id: string;
-        css: string;
-        pending: number;
-        finished: number;
-      }[];
-      [x: string]: unknown;
-    };
+    /**@type { { turns: { id: string; css: string; pending: number; finished: number; }[]; [x: string]: unknown; } */
+    const data = await super.getData(options);
     const sort = config.sort ?? true;
-    const disp: Record<number, string> = {
+    const disp = {
       [-2]: "secret",
       [-1]: "enemy",
       [0]: "neutral",
@@ -47,16 +36,13 @@ export class LancerCombatTracker extends CombatTracker {
       [2]: "player",
     };
     data.turns = data.turns.map(t => {
-      const combatant: LancerCombatant | undefined = <LancerCombatant>(
-        this.viewed!.getEmbeddedDocument("Combatant", t.id)
-      );
+      /** @type {LancerCombatant|undefined} */
+      const combatant = this.viewed.getEmbeddedDocument("Combatant", t.id);
       return {
         ...t,
         css: t.css + " " + disp[combatant?.disposition ?? -2],
         pending: combatant?.activations.value ?? 0,
-        finished:
-          (combatant?.activations.max ?? 1) -
-          (combatant?.activations.value ?? 0),
+        finished: (combatant?.activations.max ?? 1) - (combatant?.activations.value ?? 0),
       };
     });
     if (sort) {
@@ -71,60 +57,71 @@ export class LancerCombatTracker extends CombatTracker {
     }
     data.icon_class = appearance.icon;
     data.enable_initiative = CONFIG.LancerInitiative.enable_initiative ?? false;
-    return <CombatTracker.Data>data;
+    return data;
   }
 
-  override activateListeners(html: JQuery<HTMLElement>): void {
+  /**
+   * @param html {JQuery<HTMLElement>}
+   */
+  activateListeners(html) {
     super.activateListeners(html);
-    html
-      .find(".lancer-combat-control")
-      .on("click", this._onActivateCombatant.bind(this));
+    html.find(".lancer-combat-control").on("click", this._onActivateCombatant.bind(this));
   }
 
   /**
    * Activate the selected combatant
+   * @param event {JQuery.ClickEvent<HTMLElement, undefined, HTMLElement, HTMLElement>}
    */
-  protected async _onActivateCombatant(
-    event: JQuery.ClickEvent<HTMLElement, undefined, HTMLElement, HTMLElement>
-  ): Promise<void> {
+  async _onActivateCombatant(event) {
     event.preventDefault();
     event.stopPropagation();
+    /** @type {HTMLElement} */
     const btn = event.currentTarget;
-    const id = btn.closest<HTMLElement>(".combatant")?.dataset.combatantId;
+    const id = btn.closest(".combatant")?.dataset.combatantId;
     if (!id) return;
     switch (btn.dataset.control) {
       case "deactivateCombatant":
-        await (<LancerCombat>this.viewed!).deactivateCombatant(id);
+        await this.viewed.deactivateCombatant(id);
         break;
       case "activateCombatant":
-        await (<LancerCombat>this.viewed!).activateCombatant(id);
+        await this.viewed.activateCombatant(id);
         break;
     }
   }
 
-  protected async _onAddActivation(li: JQuery<HTMLElement>): Promise<void> {
-    const combatant: LancerCombatant = <LancerCombatant>(
-      this.viewed!.getEmbeddedDocument("Combatant", li.data("combatant-id"))
-    );
+  /**
+   * @param li {JQuery<HTMLElement>}
+   */
+  async _onAddActivation(li) {
+    /** @type {LancerCombatant} */
+    const combatant = this.viewed.getEmbeddedDocument("Combatant", li.data("combatant-id"));
     await combatant.addActivations(1);
   }
 
-  protected async _onRemoveActivation(li: JQuery<HTMLElement>): Promise<void> {
-    const combatant: LancerCombatant = <LancerCombatant>(
-      this.viewed!.getEmbeddedDocument("Combatant", li.data("combatant-id"))
-    );
+  /**
+   * @param li {JQuery<HTMLElement>}
+   */
+  async _onRemoveActivation(li) {
+    /** @type {LancerCombatant} */
+    const combatant = this.viewed.getEmbeddedDocument("Combatant", li.data("combatant-id"));
     await combatant.addActivations(-1);
   }
 
-  protected async _onUndoActivation(li: JQuery<HTMLElement>): Promise<void> {
-    const combatant: LancerCombatant = <LancerCombatant>(
-      this.viewed!.getEmbeddedDocument("Combatant", li.data("combatant-id"))
-    );
+  /**
+   * @param li {JQuery<HTMLElement>}
+   */
+  async _onUndoActivation(li) {
+    /** @type {LancerCombatant} */
+    const combatant = this.viewed.getEmbeddedDocument("Combatant", li.data("combatant-id"));
     await combatant.modifyCurrentActivations(1);
   }
 
-  protected override _getEntryContextOptions(): ContextMenuEntry[] {
-    const m: ContextMenuEntry[] = [
+  /**
+   * @returns {ContextMenuEntry[]}
+   */
+  _getEntryContextOptions() {
+    /** @type {ContextMenuEntry[]} */
+    const m = [
       {
         name: "LANCERINITIATIVE.AddActivation",
         icon: '<i class="fas fa-plus"></i>',
@@ -141,36 +138,24 @@ export class LancerCombatTracker extends CombatTracker {
         callback: this._onUndoActivation.bind(this),
       },
     ];
-    m.push(
-      ...super
-        ._getEntryContextOptions()
-        .filter(i => i.name !== "COMBAT.CombatantReroll")
-    );
+    m.push(...super._getEntryContextOptions().filter(i => i.name !== "COMBAT.CombatantReroll"));
     return m;
   }
 }
 
 /**
  * Get the current appearance data from settings
+ * @returns {NonNullable<CONFIG["LancerInitiative"]["def_appearance"]>}
  */
-export function getTrackerAppearance(): NonNullable<
-  CONFIG["LancerInitiative"]["def_appearance"]
-> {
+export function getTrackerAppearance() {
   const config = CONFIG.LancerInitiative;
   if (!config.def_appearance)
-    throw new Error(
-      "No default appearance specified in CONFIG.LancerInitiative"
-    );
+    throw new Error("No default appearance specified in CONFIG.LancerInitiative");
   return {
     ...config.def_appearance,
-    ...(game.settings.get(
-      config.module,
-      "combat-tracker-appearance"
-    ) as Appearance),
+    ...game.settings.get(config.module, "combat-tracker-appearance"),
   };
 }
-
-type Appearance = Partial<CONFIG["LancerInitiative"]["def_appearance"]>;
 
 /**
  * Register the helper we use to print the icon the correnct number of times

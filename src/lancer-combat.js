@@ -4,20 +4,19 @@
  * is added to the interface.
  */
 export class LancerCombat extends Combat {
-  protected override _sortCombatants(
-    a: LancerCombatant,
-    b: LancerCombatant
-  ): number {
+  /**
+   * @param a {LancerCombatant}
+   * @param b {LancerCombatant}
+   * @returns {number}
+   */
+  _sortCombatants(a, b) {
     // Sort by Players then Neutrals then Hostiles
     const dc = b.disposition - a.disposition;
     if (dc !== 0) return dc;
     return super._sortCombatants(a, b);
   }
 
-  protected override async _preCreate(
-    ...[data, options, user]: Parameters<Combat["_preCreate"]>
-  ): Promise<void> {
-    // @ts-expect-error v10
+  async _preCreate(...[data, options, user]) {
     this.updateSource({ turn: null });
     return super._preCreate(data, options, user);
   }
@@ -25,33 +24,27 @@ export class LancerCombat extends Combat {
   /**
    * Set all combatants to their max activations
    */
-  async resetActivations(): Promise<LancerCombatant[]> {
+  async resetActivations() {
     const module = CONFIG.LancerInitiative.module;
-    const skipDefeated =
-      "skipDefeated" in this.settings && this.settings.skipDefeated;
+    const skipDefeated = "skipDefeated" in this.settings && this.settings.skipDefeated;
     const updates = this.combatants.map(c => {
       return {
         _id: c.id,
         [`flags.${module}.activations.value`]:
-          skipDefeated && c.isDefeated
-            ? 0
-            : (<LancerCombatant>c).activations.max ?? 0,
+          skipDefeated && c.isDefeated ? 0 : c.activations.max ?? 0,
       };
     });
-    return <Promise<LancerCombatant[]>>(
-      this.updateEmbeddedDocuments("Combatant", updates)
-    );
+    return this.updateEmbeddedDocuments("Combatant", updates);
   }
 
-  override async startCombat(): Promise<this | undefined> {
+  async startCombat() {
     await this.resetActivations();
     return this.update({ round: 1, turn: null });
   }
 
-  override async nextRound(): Promise<this | undefined> {
+  async nextRound() {
     await this.resetActivations();
-    let advanceTime =
-      Math.max(this.turns.length - (this.turn || 0), 0) * CONFIG.time.turnTime;
+    let advanceTime = Math.max(this.turns.length - (this.turn || 0), 0) * CONFIG.time.turnTime;
     advanceTime += CONFIG.time.roundTime;
     // @ts-ignore jtfc advanceTime is fucking used in foundry.js
     return this.update({ round: this.round + 1, turn: null }, { advanceTime });
@@ -60,11 +53,11 @@ export class LancerCombat extends Combat {
   /**
    * Ends the current turn without starting a new one
    */
-  override async nextTurn(): Promise<this | undefined> {
+  async nextTurn() {
     return this.update({ turn: null });
   }
 
-  override async previousRound(): Promise<this | undefined> {
+  async previousRound() {
     await this.resetActivations();
     const round = Math.max(this.round - 1, 0);
     let advanceTime = 0;
@@ -73,7 +66,7 @@ export class LancerCombat extends Combat {
     return this.update({ round, turn: null }, { advanceTime });
   }
 
-  override async resetAll(): Promise<this | undefined> {
+  async resetAll() {
     await this.resetActivations();
     // @ts-expect-error v10
     this.combatants.forEach(c => c.updateSource({ initiative: null }));
@@ -84,15 +77,12 @@ export class LancerCombat extends Combat {
    * Sets the active turn to the combatant passed by id or calls
    * {@link LancerCombat#requestActivation()} if the user does not have
    * permission to modify the combat
+   * @param id {string}
+   * @param [override]
    */
-  async activateCombatant(
-    id: string,
-    override = false
-  ): Promise<this | undefined> {
+  async activateCombatant(id, override = false) {
     if (!game.user?.isGM && !override) return this.requestActivation(id);
-    const combatant = <LancerCombatant | undefined>(
-      this.getEmbeddedDocument("Combatant", id)
-    );
+    const combatant = this.getEmbeddedDocument("Combatant", id);
     if (!combatant?.activations.value) return this;
     await combatant?.modifyCurrentActivations(-1);
     const turn = this.turns.findIndex(t => t.id === id);
@@ -103,22 +93,20 @@ export class LancerCombat extends Combat {
    * Sets the active turn back to 0 (no active unit) if the passed id
    * corresponds to the current turn and the user has ownership of the
    * combatant.
+   * @param id {string}
    */
-  async deactivateCombatant(id: string) {
+  async deactivateCombatant(id) {
     const turn = this.turns.findIndex(t => t.id === id);
     if (turn !== this.turn) return this;
-    if (
-      !this.turns[turn].testUserPermission(game.user!, "OWNER") &&
-      !game.user?.isGM
-    )
-      return this;
+    if (!this.turns[turn].testUserPermission(game.user, "OWNER") && !game.user?.isGM) return this;
     return this.nextTurn();
   }
 
   /**
    * Calls any Hooks registered for "LancerCombatRequestActivate".
+   * @param id {string}
    */
-  protected async requestActivation(id: string): Promise<this> {
+  async requestActivation(id) {
     Hooks.callAll("LancerCombatRequestActivate", this, id);
     return this;
   }
@@ -129,15 +117,11 @@ export class LancerCombatant extends Combatant {
    * This just fixes a bug in foundry 0.8.x that prevents Combatants with no
    * associated token or actor from being modified, even by the GM
    */
-  override testUserPermission(
-    ...[user, permission, options]: Parameters<Combatant["testUserPermission"]>
-  ): boolean {
-    return (
-      this.actor?.testUserPermission(user, permission, options) ?? user.isGM
-    );
+  testUserPermission(...[user, permission, options]) {
+    return this.actor?.testUserPermission(user, permission, options) ?? user.isGM;
   }
 
-  override prepareBaseData(): void {
+  prepareBaseData() {
     super.prepareBaseData();
     const module = CONFIG.LancerInitiative.module;
     if (
@@ -145,7 +129,8 @@ export class LancerCombatant extends Combatant {
       this.flags?.[module]?.activations?.max === undefined &&
       canvas?.ready
     ) {
-      let activations: number;
+      /** @type {number} */
+      let activations;
       switch (typeof CONFIG.LancerInitiative.activations) {
         case "string":
           activations =
@@ -174,20 +159,21 @@ export class LancerCombatant extends Combatant {
   /**
    * The current activation data for the combatant.
    */
-  get activations(): Activations {
+  get activations() {
     const module = CONFIG.LancerInitiative.module;
-    return <Activations>this.getFlag(module, "activations") ?? {};
+    return this.getFlag(module, "activations") ?? {};
   }
 
   /**
    * The disposition for this combatant. In order, manually specified for this
    * combatant, token dispostion, token disposition for the associated actor,
    * -2.
+   * @returns {number}
    */
-  get disposition(): number {
+  get disposition() {
     const module = CONFIG.LancerInitiative.module;
     return (
-      <number>this.getFlag(module, "disposition") ??
+      this.getFlag(module, "disposition") ??
       (this.actor?.hasPlayerOwner ?? false
         ? 2
         : // @ts-expect-error v10
@@ -200,9 +186,9 @@ export class LancerCombatant extends Combatant {
 
   /**
    * Adjusts the number of activations that a combatant can take
-   * @param num - The number of maximum activations to add (can be negative)
+   * @param num {number} - The number of maximum activations to add (can be negative)
    */
-  async addActivations(num: number): Promise<this | undefined> {
+  async addActivations(num) {
     const module = CONFIG.LancerInitiative.module;
     if (num === 0) return this;
     return this.update({
@@ -215,27 +201,15 @@ export class LancerCombatant extends Combatant {
 
   /**
    * Adjusts the number of current activations that a combatant has
-   * @param num - The number of current activations to add (can be negative)
+   * @param num {number} - The number of current activations to add (can be negative)
    */
-  async modifyCurrentActivations(num: number): Promise<this | undefined> {
+  async modifyCurrentActivations(num) {
     const module = CONFIG.LancerInitiative.module;
     if (num === 0) return this;
     return this.update({
       [`flags.${module}.activations`]: {
-        value: Math.clamped(
-          (this.activations?.value ?? 0) + num,
-          0,
-          this.activations?.max ?? 1
-        ),
+        value: Math.clamped((this.activations?.value ?? 0) + num, 0, this.activations?.max ?? 1),
       },
     });
   }
-}
-
-/**
- * Interface for the activations object
- */
-interface Activations {
-  max?: number;
-  value?: number;
 }

@@ -5,8 +5,11 @@ import { LancerInitiativeConfigForm } from "./li-form";
 const module = "lancer-initiative";
 const templatePath = "modules/lancer-initiative/templates/lancer-combat-tracker.hbs";
 
-export function setAppearance(val: Partial<LancerInitiativeConfig["def_appearance"]>): void {
-  const defaults = CONFIG.LancerInitiative.def_appearance!;
+/**
+ * @param val {Partial<LancerInitiativeConfig["def_appearance"]>}
+ */
+export function setAppearance(val) {
+  const defaults = CONFIG.LancerInitiative.def_appearance;
   document.documentElement.style.setProperty(
     "--lancer-initiative-icon-size",
     `${val?.icon_size ?? defaults.icon_size}rem`
@@ -39,11 +42,11 @@ export function setAppearance(val: Partial<LancerInitiativeConfig["def_appearanc
   game.combats?.render();
 }
 
-function registerSettings(): void {
+function registerSettings() {
   console.log(`${module} | Initializing Lancer Initiative Module`);
   if (!!CONFIG.LancerInitiative?.module) {
     Hooks.once("ready", () =>
-      ui.notifications!.warn(
+      ui.notifications.warn(
         "The system you are using implements lancer initiative natively. You can disable the module",
         { permanent: true }
       )
