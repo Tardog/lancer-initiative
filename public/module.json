@@ -6,9 +6,9 @@
     "type": "module",
     "version": "26-dev",
     "compatibility": {
-        "minimum": "10",
-        "verified": "10.284",
-        "maximum": "11"
+        "minimum": "12",
+        "verified": "12",
+        "maximum": "12"
     },
     "esmodules": ["./lancer-initiative.js"],
     "styles": ["./lancer-initiative.css"],

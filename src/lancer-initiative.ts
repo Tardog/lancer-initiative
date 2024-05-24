@@ -1,10 +1,5 @@
-import {
-  LancerCombat,
-  LancerCombatant,
-  LancerInitiativeConfig,
-  getTrackerAppearance,
-} from "lancer-initiative";
-import { LancerCombatTracker } from "./lancer-combat-tracker";
+import { LancerCombat, LancerCombatant } from "./lancer-combat";
+import { getTrackerAppearance, LancerCombatTracker } from "./lancer-combat-tracker";
 import { LancerInitiativeConfigForm } from "./li-form";
 
 const module = "lancer-initiative";

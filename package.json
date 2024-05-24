@@ -21,8 +21,5 @@
   },
   "author": "Bolts",
   "license": "Apache-2.0",
-  "repository": "https://github.com/BoltsJ/lancer-initiative.git",
-  "dependencies": {
-    "lancer-initiative": "^3.1.0"
-  }
+  "repository": "https://github.com/BoltsJ/lancer-initiative.git"
 }

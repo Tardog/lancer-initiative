@@ -1,4 +1,4 @@
-import { getTrackerAppearance } from "lancer-initiative";
+import { getTrackerAppearance } from "./lancer-combat-tracker";
 type Appearance = NonNullable<typeof CONFIG.LancerInitiative.def_appearance>;
 
 /**

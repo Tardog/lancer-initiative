@@ -1,4 +1,4 @@
-import type { LancerCombat, LancerCombatant } from "lancer-initiative";
+import type { LancerCombat, LancerCombatant } from "./lancer-combat";
 
 /**
  * Overrides the display of the combat and turn order tab to add activation
