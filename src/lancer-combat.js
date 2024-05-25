@@ -207,7 +207,7 @@ export class LancerCombatant extends Combatant {
     if (num === 0) return this;
     return this.update({
       [`flags.${module}.activations`]: {
-        value: Math.clamped((this.activations?.value ?? 0) + num, 0, this.activations?.max ?? 1),
+        value: Math.clamp((this.activations?.value ?? 0) + num, 0, this.activations?.max ?? 1),
       },
     });
   }

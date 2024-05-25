@@ -5,7 +5,7 @@
     "authors": [{ "name": "Bolts" }],
     "version": "28-dev",
     "compatibility": {
-        "minimum": "11",
+        "minimum": "12",
         "verified": "12",
         "maximum": "12"
     },
