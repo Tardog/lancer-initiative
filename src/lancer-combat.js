@@ -44,16 +44,22 @@ export class LancerCombat extends Combat {
 
   async nextRound() {
     await this.resetActivations();
+    const updateData = { round: this.round + 1, turn: null };
     let advanceTime = Math.max(this.turns.length - (this.turn || 0), 0) * CONFIG.time.turnTime;
     advanceTime += CONFIG.time.roundTime;
-    return this.update({ round: this.round + 1, turn: null }, { advanceTime });
+    const updateOptions = { advanceTime, direction: 1 };
+    Hooks.callAll("combatRound", this, updateData, updateOptions);
+    return this.update(updateData, updateOptions);
   }
 
   /**
    * Ends the current turn without starting a new one
    */
   async nextTurn() {
-    return this.update({ turn: null });
+    const updateData = { turn: null };
+    const updateOptions = { advanceTime: 0, direction: 0 };
+    Hooks.callAll("combatTurn", this, updateData, updateOptions);
+    return this.update(updateData, updateOptions);
   }
 
   async previousRound() {
@@ -61,7 +67,19 @@ export class LancerCombat extends Combat {
     const round = Math.max(this.round - 1, 0);
     let advanceTime = 0;
     if (round > 0) advanceTime -= CONFIG.time.roundTime;
-    return this.update({ round, turn: null }, { advanceTime });
+    const updateData = { round, turn: null };
+    const updateOptions = { advanceTime, direction: -1 };
+    Hooks.callAll("combatRound", this, updateData, updateOptions);
+    return this.update(updateData, updateOptions);
+  }
+
+  async previousTurn() {
+    if (this.turn == null) return this;
+    const updateData = { turn: null };
+    const updateOptions = { advanceTime: -CONFIG.time.turnTime, direction: -1 };
+    this.combatant?.modifyCurrentActivations(1);
+    Hooks.callAll("combatTurn", this, updateData, updateOptions);
+    return this.update(updateData, updateOptions);
   }
 
   async resetAll() {
