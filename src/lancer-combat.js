@@ -129,14 +129,6 @@ export class LancerCombat extends Combat {
 }
 
 export class LancerCombatant extends Combatant {
-  /**
-   * This just fixes a bug in foundry 0.8.x that prevents Combatants with no
-   * associated token or actor from being modified, even by the GM
-   */
-  testUserPermission(user, permission, options) {
-    return this.actor?.testUserPermission(user, permission, options) ?? user.isGM;
-  }
-
   prepareBaseData() {
     super.prepareBaseData();
     const module = CONFIG.LancerInitiative.module;
