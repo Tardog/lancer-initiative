@@ -16,7 +16,7 @@ export class LancerCombat extends Combat {
     return super._sortCombatants(a, b);
   }
 
-  async _preCreate(...[data, options, user]) {
+  async _preCreate(data, options, user) {
     this.updateSource({ turn: null });
     return super._preCreate(data, options, user);
   }
@@ -133,7 +133,7 @@ export class LancerCombatant extends Combatant {
    * This just fixes a bug in foundry 0.8.x that prevents Combatants with no
    * associated token or actor from being modified, even by the GM
    */
-  testUserPermission(...[user, permission, options]) {
+  testUserPermission(user, permission, options) {
     return this.actor?.testUserPermission(user, permission, options) ?? user.isGM;
   }
 
