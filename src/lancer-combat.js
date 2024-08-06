@@ -175,12 +175,13 @@ export class LancerCombatant extends Combatant {
    */
   get disposition() {
     const module = CONFIG.LancerInitiative.module;
-    return (
+    const disposition =
       this.getFlag(module, "disposition") ??
-      (this.actor?.hasPlayerOwner ?? false
-        ? 2
-        : this.token?.disposition ?? this.actor?.prototypeToken.disposition ?? -2)
-    );
+      this.token?.disposition ??
+      this.actor?.prototypeToken.disposition ??
+      -2;
+    if (disposition === CONST.TOKEN_DISPOSITIONS.FRIENDLY && this.hasPlayerOwner) return 2;
+    return disposition;
   }
 
   /**

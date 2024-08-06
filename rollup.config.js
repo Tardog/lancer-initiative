@@ -9,21 +9,8 @@ const config = {
     dir: "dist",
     format: "es",
     sourcemap: true,
-    chunkFileNames: chunkInfo => {
-      switch (chunkInfo.name) {
-        case "starwarsffg":
-          return "[name].js";
-        default:
-          return "[name]-[hash].js";
-      }
-    },
-    plugins: [
-      terser({ keep_classnames: true, keep_fnames: true }),
-    ],
+    plugins: [terser({ keep_classnames: true, keep_fnames: true })],
   },
-  plugins: [
-    copy({ targets: [{ src: "public/*", dest: "dist" }] }),
-    nodeResolve(),
-  ],
+  plugins: [copy({ targets: [{ src: "public/*", dest: "dist" }] }), nodeResolve()],
 };
 export default config;
