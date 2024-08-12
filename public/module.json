@@ -1,7 +1,7 @@
 {
     "id": "lancer-initiative",
     "title": "Lancer Initiative",
-    "description": "Implements Lancer's popcorn style initiative in Foundry VTT",
+    "description": "Implements Lancer's popcorn style initiative for other game systems",
     "authors": [{ "name": "Bolts" }],
     "version": "28-dev",
     "compatibility": {
