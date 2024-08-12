@@ -24,7 +24,7 @@ export class LancerCombatTracker extends CombatTracker {
    */
   async getData(options = {}) {
     const config = CONFIG.LancerInitiative;
-    const appearance = getTrackerAppearance();
+    const appearance = game.settings.get("lancer-initiative", "combat-tracker-appearance");
     /**@type { { turns: { id: string; css: string; pending: number; finished: number; }[]; [x: string]: unknown; } */
     const data = await super.getData(options);
     const sort = config.sort ?? true;
@@ -42,7 +42,7 @@ export class LancerCombatTracker extends CombatTracker {
         ...t,
         css: t.css + " " + disp[combatant?.disposition ?? -2],
         pending: combatant?.activations.value ?? 0,
-        finished: (combatant?.activations.max ?? 1) - (combatant?.activations.value ?? 0),
+        finished: +(combatant === this.viewed.combatant), // (combatant?.activations.max ?? 1) - (combatant?.activations.value ?? 0),
       };
     });
     if (sort) {
@@ -56,7 +56,8 @@ export class LancerCombatTracker extends CombatTracker {
       });
     }
     data.icon_class = appearance.icon;
-    data.enable_initiative = CONFIG.LancerInitiative.enable_initiative ?? false;
+    data.deactivate_icon_class = appearance.deactivate;
+    data.enable_initiative = config.enable_initiative ?? false;
     return data;
   }
 
@@ -141,20 +142,6 @@ export class LancerCombatTracker extends CombatTracker {
     m.push(...super._getEntryContextOptions().filter(i => i.name !== "COMBAT.CombatantReroll"));
     return m;
   }
-}
-
-/**
- * Get the current appearance data from settings
- * @returns {NonNullable<CONFIG["LancerInitiative"]["def_appearance"]>}
- */
-export function getTrackerAppearance() {
-  const config = CONFIG.LancerInitiative;
-  if (!config.def_appearance)
-    throw new Error("No default appearance specified in CONFIG.LancerInitiative");
-  return {
-    ...config.def_appearance,
-    ...game.settings.get(config.module, "combat-tracker-appearance"),
-  };
 }
 
 /**

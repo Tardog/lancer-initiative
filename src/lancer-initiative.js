@@ -5,36 +5,26 @@ import { LancerInitiativeConfigForm } from "./li-form";
 const module = "lancer-initiative";
 const templatePath = "modules/lancer-initiative/templates/lancer-combat-tracker.hbs";
 
+/**
+ * @param {CombatTrackerAppearance} val
+ */
 export function setAppearance(val) {
-  const defaults = CONFIG.LancerInitiative.def_appearance;
   document.documentElement.style.setProperty(
     "--lancer-initiative-icon-size",
-    `${val?.icon_size ?? defaults.icon_size}rem`
+    `${val.icon_size}rem`
   );
-  document.documentElement.style.setProperty(
-    "--lancer-initiative-player-color",
-    val?.player_color ?? defaults.player_color
-  );
+  document.documentElement.style.setProperty("--lancer-initiative-player-color", val.player_color);
   document.documentElement.style.setProperty(
     "--lancer-initiative-friendly-color",
-    val?.friendly_color ?? defaults.friendly_color
+    val.friendly_color
   );
   document.documentElement.style.setProperty(
     "--lancer-initiative-neutral-color",
-    val?.neutral_color ?? defaults.neutral_color
+    val.neutral_color
   );
-  document.documentElement.style.setProperty(
-    "--lancer-initiative-enemy-color",
-    val?.enemy_color ?? defaults.enemy_color
-  );
-  document.documentElement.style.setProperty(
-    "--lancer-initiative-secret-color",
-    val?.secret_color ?? defaults.secret_color
-  );
-  document.documentElement.style.setProperty(
-    "--lancer-initiative-done-color",
-    val?.done_color ?? defaults.done_color
-  );
+  document.documentElement.style.setProperty("--lancer-initiative-enemy-color", val.enemy_color);
+  document.documentElement.style.setProperty("--lancer-initiative-secret-color", val.secret_color);
+  document.documentElement.style.setProperty("--lancer-initiative-done-color", val.done_color);
   game.combats?.render();
 }
 
@@ -54,27 +44,19 @@ function registerSettings() {
   CONFIG.LancerInitiative = {
     module,
     templatePath,
-    def_appearance: {
-      icon: "fas fa-chevron-circle-right",
-      icon_size: 1.5,
-      player_color: "#44abe0",
-      friendly_color: "#44abe0",
-      neutral_color: "#146464",
-      enemy_color: "#d98f30",
-      secret_color: "#552f8c",
-      done_color: "#444444",
-    },
+    def_appearance: new CombatTrackerAppearance(),
   };
   Object.defineProperty(CONFIG.LancerInitiative, "module", { writable: false });
-
-  // const old_combat = CONFIG.Combat.documentClass;
 
   // Override classes
   CONFIG.Combat.documentClass = LancerCombat;
   CONFIG.Combatant.documentClass = LancerCombatant;
   CONFIG.ui.combat = LancerCombatTracker;
 
-  game.settings.registerMenu(module, "lancerInitiative", {
+  // Call hooks to signal other modules of the initialization
+  Hooks.callAll("LancerInitiativeInit");
+
+  game.settings.registerMenu(module, "combat-tracker-appearance", {
     name: "LANCERINITIATIVE.IconSettingsMenu",
     label: "LANCERINITIATIVE.IconSettingsMenu",
     type: LancerInitiativeConfigForm,
@@ -83,9 +65,9 @@ function registerSettings() {
   game.settings.register(module, "combat-tracker-appearance", {
     scope: "world",
     config: false,
-    type: Object,
+    type: CombatTrackerAppearance,
     onChange: setAppearance,
-    default: {},
+    default: CONFIG.LancerInitiative.def_appearance,
   });
   // Allows combat tracker sorting to be toggled. Optional for downstreams.
   game.settings.register(module, "combat-tracker-sort", {
@@ -119,11 +101,64 @@ function registerSettings() {
     "combat-tracker-enable-initiative"
   );
 
-  // Call hooks to signal other modules of the initialization
-  Hooks.callAll("LancerInitiativeInit");
-
   // Set the css vars
-  setAppearance(getTrackerAppearance());
+  setAppearance(game.settings.get(module, "combat-tracker-appearance"));
 }
 
 Hooks.once("init", registerSettings);
+export class CombatTrackerAppearance extends foundry.abstract.DataModel {
+  static defineSchema() {
+    const fields = foundry.data.fields;
+    return {
+      icon: new fields.StringField({
+        required: true,
+        initial: "fas fa-circle-chevron-right",
+        label: "LANCERINITIATIVE.Icon",
+      }),
+      deactivate: new fields.StringField({
+        required: true,
+        initial: "fas fa-circle-xmark",
+        label: "LANCERINITIATIVE.DeactivateIcon",
+      }),
+      icon_size: new fields.NumberField({
+        required: true,
+        initial: 1.5,
+        min: 1,
+        max: 3,
+        step: 0.1,
+        integer: false,
+        label: "LANCERINITIATIVE.IconSize",
+      }),
+      player_color: new fields.ColorField({
+        required: true,
+        initial: "#44abe0",
+        label: "LANCERINITIATIVE.PartyColor",
+      }),
+      friendly_color: new fields.ColorField({
+        required: true,
+        initial: "#44abe0",
+        label: "LANCERINITIATIVE.FriendlyColor",
+      }),
+      neutral_color: new fields.ColorField({
+        required: true,
+        initial: "#146464",
+        label: "LANCERINITIATIVE.NeutralColor",
+      }),
+      enemy_color: new fields.ColorField({
+        required: true,
+        initial: "#d98f30",
+        label: "LANCERINITIATIVE.EnemyColor",
+      }),
+      secret_color: new fields.ColorField({
+        required: true,
+        initial: "#552f8c",
+        label: "LANCERINITIATIVE.SecretColor",
+      }),
+      done_color: new fields.ColorField({
+        required: true,
+        initial: "#aaaaaa",
+        label: "LANCERINITIATIVE.DeactivateColor",
+      }),
+    };
+  }
+}
