@@ -9,15 +9,6 @@
 }
 
 li.combatant {
-  /* margin-left: 3px; */
-  /* &::before { */
-  /*   content: ""; */
-  /*   position: relative; */
-  /*   left: -3px; */
-  /*   width: 3px; */
-  /*   border-left: 3px solid; */
-  /*   border-radius: 5px; */
-  /* } */
   border-radius: 5px;
   &.player {
     border-left: 3px solid var(--lancer-initiative-player-color);
@@ -50,36 +41,33 @@ li.combatant {
   flex: 0 0 auto;
 }
 
-[data-tab="combat"] #combat-tracker .combatant .token-initiative i,
-[data-tab="combat"] #combat-tracker .combatant .token-initiative a {
-  font-size: var(--lancer-initiative-icon-size);
-}
-[data-tab="combat"] #combat-tracker .combatant.active .token-initiative a.done {
-  color: var(--lancer-initiative-done-color);
-}
-
-[data-tab="combat"] #combat-tracker .combatant.player .token-initiative a {
-  color: var(--lancer-initiative-player-color);
-}
-
-[data-tab="combat"] #combat-tracker .combatant.friendly .token-initiative a {
-  color: var(--lancer-initiative-friendly-color);
-}
-[data-tab="combat"] #combat-tracker .combatant.neutral .token-initiative a {
-  color: var(--lancer-initiative-neutral-color);
-}
-
-[data-tab="combat"] #combat-tracker .combatant.enemy .token-initiative a {
-  color: var(--lancer-initiative-enemy-color);
-}
-
-[data-tab="combat"] #combat-tracker .combatant.secret .token-initiative a {
-  color: var(--lancer-initiative-secret-color);
-}
-
-[data-tab="combat"] #combat-tracker li.combatant.turn-done {
-  color: inherit;
-  text-decoration: inherit;
+[data-tab="combat"] #combat-tracker {
+  .combatant .token-initiative i,
+  .combatant .token-initiative a {
+    font-size: var(--lancer-initiative-icon-size);
+  }
+  .combatant.active .token-initiative a.done {
+    color: var(--lancer-initiative-done-color);
+  }
+  .combatant.player .token-initiative a {
+    color: var(--lancer-initiative-player-color);
+  }
+  .combatant.friendly .token-initiative a {
+    color: var(--lancer-initiative-friendly-color);
+  }
+  .combatant.neutral .token-initiative a {
+    color: var(--lancer-initiative-neutral-color);
+  }
+  .combatant.enemy .token-initiative a {
+    color: var(--lancer-initiative-enemy-color);
+  }
+  .combatant.secret .token-initiative a {
+    color: var(--lancer-initiative-secret-color);
+  }
+  li.combatant.turn-done {
+    color: inherit;
+    text-decoration: inherit;
+  }
 }
 
 #lancer-initiative-settings {
