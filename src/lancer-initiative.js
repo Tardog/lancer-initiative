@@ -88,13 +88,13 @@ function registerSettings() {
     name: "LANCERINITIATIVE.EnableInitiative",
     hint: "LANCERINITIATIVE.EnableInitiativeDesc",
     scope: "world",
-    config: !!CONFIG.Combat.initiative.formula,
+    config: !!CONFIG.Combat.initiative.formula && CONFIG.LancerInitiative.enable_initiative == null,
     type: Boolean,
     onChange: v => {
       CONFIG.LancerInitiative.enable_initiative = v;
       game.combats?.render();
     },
-    default: false,
+    default: CONFIG.LancerInitiative.enable_initiative ?? false,
   });
   CONFIG.LancerInitiative.enable_initiative = game.settings.get(
     module,
