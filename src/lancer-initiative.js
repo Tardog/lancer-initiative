@@ -1,6 +1,6 @@
 import { LancerCombat, LancerCombatant } from "./lancer-combat";
-import { getTrackerAppearance, LancerCombatTracker } from "./lancer-combat-tracker";
-import { LancerInitiativeConfigForm } from "./li-form";
+import { LancerCombatTracker } from "./lancer-combat-tracker";
+import { LancerInitiativeConfigApp } from "./li-config.mjs";
 
 const module = "lancer-initiative";
 const templatePath = "modules/lancer-initiative/templates/lancer-combat-tracker.hbs";
@@ -59,11 +59,11 @@ function registerSettings() {
   game.settings.registerMenu(module, "combat-tracker-appearance", {
     name: "LANCERINITIATIVE.IconSettingsMenu",
     label: "LANCERINITIATIVE.IconSettingsMenu",
-    type: LancerInitiativeConfigForm,
-    restricted: true,
+    type: LancerInitiativeConfigApp,
+    restricted: false,
   });
   game.settings.register(module, "combat-tracker-appearance", {
-    scope: "world",
+    scope: "client",
     config: false,
     type: CombatTrackerAppearance,
     onChange: setAppearance,
