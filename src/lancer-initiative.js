@@ -1,4 +1,5 @@
-import { LancerCombat, LancerCombatant } from "./lancer-combat";
+import { LancerCombatant } from "./lancer-combat";
+import { Ex3Combat } from "./ex3-combat";
 import { LancerCombatTracker } from "./lancer-combat-tracker";
 import { LancerInitiativeConfigApp } from "./li-config.mjs";
 
@@ -49,7 +50,7 @@ function registerSettings() {
   Object.defineProperty(CONFIG.LancerInitiative, "module", { writable: false });
 
   // Override classes
-  CONFIG.Combat.documentClass = LancerCombat;
+  CONFIG.Combat.documentClass = Ex3Combat;
   CONFIG.Combatant.documentClass = LancerCombatant;
   CONFIG.ui.combat = LancerCombatTracker;
 
